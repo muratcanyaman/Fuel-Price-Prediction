@@ -1,31 +1,31 @@
-# Küresel Yakıt Fiyatları Tahmini (2020-2026)
+# ⛽ Küresel Yakıt Fiyatları Tahmini (2020-2026)
 
-Bu proje, "veri sızıntısı" (data leakage) tuzağına düşmeden, tamamen makro-ekonomik ve politik değişkenler üzerinden küresel benzin fiyatlarını tahmin etmeyi amaçlayan uçtan uca bir Veri Bilimi çalışmasıdır.
+Bu belge, dünyanın çeşitli pazar bölgelerindeki makro-ekonomik dinamikleri kullanarak pompa benzin fiyatlarını tahmin etmeyi amaçlayan uçtan uca bir makine öğrenmesi analizidir. Projemiz "Global Fuel Prices 2020-2026" Kaggle veri seti kullanılarak hazırlanmıştır.
 
-**Veri Seti Kaynağı:** Bu projede analiz edilen veri seti (Global Fuel Prices 2020-2026), Kaggle açık veri platformundan [bu bağlantı üzerinden](https://www.kaggle.com/datasets/belbino/global-fuel-prices-20202026/data) temin edilmiştir.
+## 🎯 "Veri Sızıntısı" (Data Leakage) Problemine Çözüm
+Bildiğiniz üzere yakıt tahmini modellerinde sıklıkla yapılan büyük bir hata, aynı türden metadan (petrol türevleri) gelen "Dizel" veya "LPG" fiyatlarını hedef "Benzin" (Petrol) fiyatını tahmin etmede kullanmaktır. Ancak bu yaklaşım hileli bir başarı olan ve modeli ezbere yönlendiren "Veri Sızıntısına" (Data Leakage) sebep olur.  
+Bu projede, modelimizi bu "kısa yoldan" uzak tutmak için, **dizel ve lpg sütunları notebook içerisinde bilinçli olarak düşürülmüştür.**
 
-## Proje Özeti
-Pek çok model, benzin fiyatını tahmin etmek için modeline diğer yakıtların (örneğin Dizel veya LPG) fiyatını vererek %100'e yakın başarı elde ettiğini düşünür. Ancak tüm bu yakıtlar aynı hammaddeden üretildikleri ve yine o ülkenin aynı vergi dilimlerine tabi oldukları için, birini kullanarak diğerini basit bir "oran-orantı" problemi gibi tahmin etmek aslında yapay ve yapısal olarak hileli bir model (Veri Sızıntısı - Data Leakage) anlamına gelir.
+## 📊 Kullanılan Gerçek Değişkenler
+Benzin fiyatlarını tamamen yapısal ve ekonomik dinamiklerle tespit etmek üzere sadece aşağıdaki sütunlar sisteme beslenmiştir:
+- `brent_crude_usd`: Küresel Brent Ham Petrol Fiyatı (USD)
+- `tax_percentage`: Fiyatlara Yansıyan Yüzdelik Vergi Oranı
+- `subsidy_level`: Devlet Desteği (Sübvansiyon Seviyesi)
+- `income_level`: O Ülkenin Ekonomik Gelir Grubu 
 
-Bu projede, modelden "kolay yoldan kopya çekmesini" engellemek için diğer yakıt türlerini **kasıtlı olarak sildik**. Yalnızca aşağıdaki gerçek makro-ekonomik öznitelikleri kullanarak pompa fiyatlarını tahmin eden donanımlı bir **XGBoost Regresyon** modeli inşa ettik:
-- **Gelir Seviyesi (Income Level)**
-- **Devlet Desteği / Sübvansiyon (Subsidy Level)**
-- **Brent Ham Petrol Fiyatı USD** (Küresel pazar değeri)
-- **Vergi Yüzdesi (Tax Percentage)**
+*(Not: Hedefi direk bölen `country` ve `region` özellikleriyle birlikte, `diesel` ve `lpg` verileri test sağlığı adına modelden dışlanmıştır.)*
 
-## Keşifçi Veri Analizi (EDA)
-Modele geçmeden önce verinin karakteristiğini görsel olarak ortaya koymak için detaylı analizler (EDA) yaptık:
-*   **Fiyat Dağılım Grafikleri:** Küresel benzin fiyatlarının dünyadaki genel frekans dağılımını (histogramlar) gözlemledik.
-*   **Keman Grafikleri (Violin Plots):** Klasik bir doğrusal algoritmadan ziyade verilerdeki kırılımların asıl sebebi olan devlet destekleri veya gelir düzeyi gruplarının pompa fiyatarını nasıl ayırdığını görselleştirdik.
-*   **Korelasyon Haritası (Heatmap):** Ham petrol, vergi oranları ve diğer yakıtların matematiksel ilişkilerini çıkarttık.
+## 🔍 Notebook Adımları ve Model Kurulumu
+1. **Keşifçi Veri Analizi (EDA):** Notebook içerisinde "Histogramlar" ile yoğunluk analizi, "Keman Grafikleri (Violin Plots)" ile kategorik verilerin (gelir düzeyi vb.) benzin fiyatına etkileri görselleştirilmiş ve değişkenler arası "Korelasyon Haritası" (Heatmap) çıkarılmıştır.
+2. **Kategorik Veri İşleme:** Gelir seviyesi (Low, Medium, High vb.) algoritmaya uygun şekilde sayısallaştırıldı (`OrdinalEncoder`).
+3. **Standartlaştırma (Scaling):** Geniş rakam aralıklarına sahip ham petrol verisi gibi metrikler modelin sağlığı adına `StandardScaler` ile aynı düzleme çekildi.
+4. **Modelleme Mimari:** Tüm doğrusal olmayan (non-linear) karmaşıklığı çok başarılı bir şekilde yakalayabilmesi sebebiyle güçlü bir gradient boosting aracı olan **XGBoost Regressor** (Hiperparametreler: `n_estimators=200`, `learning_rate=0.05`, `max_depth=6`) ile çalışıldı.
 
-## Model Performansı ve Temel Çıkarımlar
-Karar Ağacı (Decision Tree) tabanlı bir algoritma olan **XGBoost'u** özellikle seçtik. Çünkü gelir seviyesi veya belirli vergi kademeleri gibi mantıksal ayrımların sebep olduğu doğrusal olmayan (non-linear) karar ayrımlarını yakalama konusunda XGBoost rakipsizdir.
+## 🚀 Model Performansı ve Temel Çıkarımlar
+- **Hata ve İstatistik (Metrikler):** Kurulan XGBoost modeli, zorlu koşullarına rağmen **~%99.8 R² Skoru** ve sadece ortalama **0.04 cent (MAE)** sapma hatasıyla pürüzsüz bir tahmin gerçekleştirmiştir.
+- **Dışa Vurum (Feature Importance):** Yapılan özellik çıkarımı (etki yüzdesi) analizine göre; ülke içi pompa fiyatlarını derinden değiştiren kuvvetlerin "küresel petrol varili maliyetlerinden ziyade", temelinde **yerel vergi politikaları** ve devletin sunduğu **sübvansiyon teşvikleri** olduğu kanıtlanmıştır.
 
-*   **Tutarlılık ve Başarı:** En zorlu şartlarla sınanmasına rağmen model **~%99.8'lik mükemmel bir R² Skoru** ile tahmini tutturmuş ve hata payı (MAE) ortalama 0.04 cent gibi çok küçük sınırların altında kalmıştır.
-*   **Veriden Elde Edilen İçgörüler:** Değişken önemi (Feature Importance) analizi, nihai benzin fiyatlarını belirleyen mutlak sürücülerin **Devlet Destekleri (Subsidy Level)** ve **Ülkelerin Gelir Seviyesi** (Income Level) olduğunu gözler önüne sermiştir. Sürpriz bir şekilde, varil başı küresel ham petrol pazar maliyetinin pompa etiketindeki pazar rolü, yerel hükümetlerin karar düzenlemelerinin çok gerisinde kalmıştır.
-
-## Başlarken
-1. Bu depo adresini (repository) ortamınıza kopyalayın (clone).
-2. Ortamınızda `pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`, ve `xgboost` paketlerinin kurulu olduğundan emin olun.
-3. Çalışmadaki görsel çıktıları ve modelin başarımını kendiniz görmek için `fuel_price_prediction.ipynb` notebook dosyasını baştan uca tek seferde çalıştırın (Run All).
+## 🛠️ Nasıl Çalıştırılır?
+1. Repo dosyalarını `git clone` ile ortamınıza indirin.
+2. İlgili veri bilimi kütüphanelerini kurmalısınız (`pandas, numpy, matplotlib, seaborn, scikit-learn, xgboost`).
+3. Her şeyi görmek ve test etmek için Jupyter arayüzünde `fuel_price_prediction.ipynb` notebook dosyasını açarak tüm satırları sırasıyla *(Run All)* çalıştırın.
